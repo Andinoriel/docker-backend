@@ -1,0 +1,57 @@
+version: "3.8"
+
+services:
+  php-fpm:
+    build:
+      context: ./docker/php-fpm
+    container_name: php-fpm
+    restart: always
+    volumes:
+      - ./www:/var/www
+    networks:
+      - app-network
+
+  nginx:
+    build:
+      context: ./docker/nginx
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - php-fpm
+    volumes:
+      - ./www:/var/www/
+      - ./docker/nginx/conf.d/:/etc/nginx/conf.d
+      - ./docker/nginx/sites/:/etc/nginx/sites-available      
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - app-network
+
+  mysql-host:
+    image: mysql:5.7
+    container_name: mysql-host
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./docker/mysql/data:/var/lib/mysql    
+    networks:
+      - app-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: mysql-host
+      PMA_PORT: 3306
+    ports:
+      - 3306:80
+    depends_on:
+      - mysql-host
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
