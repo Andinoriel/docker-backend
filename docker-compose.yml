@@ -46,7 +46,7 @@ services:
       PMA_HOST: mysql-host
       PMA_PORT: 3306
     ports:
-      - 3306:80
+      - "3309:80"
     depends_on:
       - mysql-host
     networks:
